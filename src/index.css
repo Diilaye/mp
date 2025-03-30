@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Playfair Display', serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Montserrat', sans-serif;
+  }
+}
+
+.hero-gradient {
+  background: linear-gradient(rgba(44, 62, 80, 0.7), rgba(44, 62, 80, 0.7));
+}
+
+.text-shadow {
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.hover-scale {
+  @apply transition-transform duration-300 hover:scale-105;
+}
+
+.btn-primary {
+  @apply bg-[#2C3E50] text-white px-6 py-3 rounded-lg font-montserrat font-semibold 
+         transition-all duration-300 hover:bg-opacity-90 hover:shadow-lg;
+}
+
+.section-padding {
+  @apply py-16 md:py-24;
+}
+
+.nav-link {
+  @apply font-montserrat text-gray-700 hover:text-primary transition-colors text-sm uppercase tracking-wide;
+}
+
+/* Swiper custom styles */
+.swiper-button-next,
+.swiper-button-prev {
+  @apply text-white opacity-75 hover:opacity-100 transition-opacity;
+}
+
+.swiper-pagination-bullet {
+  @apply bg-white opacity-75;
+}
+
+.swiper-pagination-bullet-active {
+  @apply bg-white opacity-100;
+}
