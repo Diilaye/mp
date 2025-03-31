@@ -69,7 +69,7 @@ const ReviewCard = ({ review }: { review: Review }) => {
           </div>
 
           <div className="mt-3">
-            <span className="text-sm font-medium text-rose-600 bg-rose-50 px-3 py-1 rounded-full">
+            <span className="text-sm font-medium text-white bg-primary px-3 py-1 rounded-full">
               {review.service}
             </span>
           </div>

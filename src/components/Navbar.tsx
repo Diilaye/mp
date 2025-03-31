@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { Link as ScrollLink } from 'react-scroll';
 import { Menu, X } from 'lucide-react';
 import AuthModal from './modals/AuthModal';
 import AuthModalInscription from './modals/AuthModal-inscription';
@@ -58,10 +59,17 @@ const Navbar: React.FC<NavbarProps> = ({ isMenuOpen, setIsMenuOpen }) => {
           
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <a href="/#home" className={`nav-link ${isScrolled ? 'text-white' : 'text-white'}`}>Accueil</a>
-            <a href="/#about" className={`nav-link ${isScrolled ? 'text-gray-700' : 'text-white'}`}>À Propos</a>
-            <a href="/#services" className={`nav-link ${isScrolled ? 'text-gray-700' : 'text-white'}`}>Services</a>
-            <a href="/search" className={`nav-link ${isScrolled ? 'text-gray-700' : 'text-white'}`}>Travailleurs</a>
+            <Link to="/" className={`nav-link ${isScrolled ? 'text-white' : 'text-white'}`}>Accueil</Link>
+            <Link to="/about" className={`nav-link ${isScrolled ? 'text-gray-700' : 'text-white'}`}>À Propos</Link>
+            <ScrollLink 
+              to="services" 
+              smooth={true} 
+              duration={500} 
+              className={`nav-link cursor-pointer ${isScrolled ? 'text-gray-700' : 'text-white'}`}
+            >
+              Services
+            </ScrollLink>
+            <Link to="/search" className={`nav-link ${isScrolled ? 'text-gray-700' : 'text-white'}`}>Professionnels</Link>
             <button onClick={() => setIsSignInOpen(true)} className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-100">Se connecter</button>
             <button onClick={() => setIsSignUpOpen(true)} className="bg-transparent text-primary border border-primary px-4 py-2 rounded-lg hover:bg-primary hover:text-white">S'inscrire</button>
             
@@ -85,10 +93,10 @@ const Navbar: React.FC<NavbarProps> = ({ isMenuOpen, setIsMenuOpen }) => {
       {isMenuOpen && (
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white">
-            <a href="#home" className="block px-3 py-2 nav-link">Accueil</a>
-            <a href="#about" className="block px-3 py-2 nav-link">À Propos</a>
-            <a href="#services" className="block px-3 py-2 nav-link">Services</a>
-            <a href="#projects" className="block px-3 py-2 nav-link">Travailleurs</a>
+            <Link to="/" className={`nav-link ${isScrolled ? 'text-white' : 'text-white'}`}>Accueil</Link>
+            <Link to="/about" className={`nav-link ${isScrolled ? 'text-gray-700' : 'text-white'}`}>À Propos</Link>
+            <Link to="/#services" className={`nav-link ${isScrolled ? 'text-gray-700' : 'text-white'}`}>Services</Link>
+            <Link to="/search" className={`nav-link ${isScrolled ? 'text-gray-700' : 'text-white'}`}>Professionnels</Link>
             <button onClick={() => setIsSignInOpen(true)} className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-100">Se connecter</button>
             <button onClick={() => setIsSignUpOpen(true)} className="bg-transparent text-primary border border-primary px-4 py-2 rounded-lg hover:bg-primary hover:text-white">S'inscrire</button>
           </div>

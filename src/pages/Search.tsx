@@ -66,7 +66,7 @@ const locations = [
   "Mbour",
   
 ];
-const rateRanges = ["Tous", "300-400€", "401-500€", "501€+"];
+const rateRanges = ["Tous", "30.000-40.000 XOF", "41.000-50.000 XOF", "51.000 XOF"];
 
 const professionals: Professional[] = [
   // Housekeepers
@@ -355,7 +355,7 @@ const SearchPage = () => {
             </div>
             <button
               onClick={() => handleBooking(professional)}
-              className="px-4 py-2 bg-rose-600 text-white rounded-lg font-medium hover:bg-rose-700 transition-colors"
+              className="px-4 py-2 bg-primary text-white rounded-lg font-medium transition-colors"
             >
               Réserver
             </button>
@@ -375,9 +375,9 @@ const SearchPage = () => {
     const matchesProfession = selectedProfession === "Tous" || worker.specialties.findIndex((e) => e === selectedProfession) == -1 ;
     const matchesCity = selectedCity === "Toutes" || worker.location === selectedCity;
     const matchesRate = selectedRate === "Tous" || 
-      (selectedRate === "300-400€" && worker.hourlyRate >= 300 && worker.hourlyRate <= 400) ||
-      (selectedRate === "401-500€" && worker.hourlyRate >= 401 && worker.hourlyRate <= 500) ||
-      (selectedRate === "501€+" && worker.hourlyRate > 500);
+      (selectedRate === "30.000-40.000 XOF" && worker.hourlyRate >= 300 && worker.hourlyRate <= 400) ||
+      (selectedRate === "41.000-50.000 XOF" && worker.hourlyRate >= 401 && worker.hourlyRate <= 500) ||
+      (selectedRate === "51.000 XOF" && worker.hourlyRate > 500);
 
     return matchesSearch && matchesProfession && matchesCity && matchesRate;
   });
@@ -393,7 +393,7 @@ const SearchPage = () => {
             </h1>
             <p className="text-gray-600 flex items-center text-lg">
               <Users className="mr-2 text-primary" size={24} />
-              <span className="font-medium">{professionals.length + ' '}</span> professionnels disponibles
+              <span className="font-medium">{`${professionals.length} professionnels disponibles `}</span> 
             </p>
           </div>
         </div>

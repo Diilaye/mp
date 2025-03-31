@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Star, Heart, Clock, MapPin, Search, ChevronDown } from 'lucide-react';
 import BookingModal from './modals/BookingModal';
-
+import { useNavigate } from 'react-router-dom';
 const professionals = [
   {
     name: "Sophie Martin",
@@ -196,6 +196,8 @@ const Workers = () => {
     setIsBookingModalOpen(true);
   };
 
+  const navigate = useNavigate();
+
   return (
     <>
       <section className="py-20 bg-gradient-to-b from-rose-50 to-white">
@@ -280,6 +282,9 @@ const Workers = () => {
                     onClick={() => {
                       // Handle search
                       console.log('Searching:', { selectedService, selectedLocation });
+                      navigate('/search', {
+                        state: { service: selectedService, location: selectedLocation },
+                      });
                     }}
                     className="w-full bg-black hover:bg-black text-white rounded-lg px-6 py-3 font-semibold flex items-center justify-center transition-colors"
                   >
