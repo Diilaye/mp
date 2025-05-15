@@ -8,12 +8,14 @@ import 'swiper/css/effect-fade';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import BookingModal from './modals/BookingModal';
+import AuthModal from './modals/AuthModal';
+import AuthModalInscription from './modals/AuthModal-inscription';
 
 const backgroundImages = [
-  '/images/banner/fem-menage.jpg',
-  '/images/banner/Fem1.jpg',
-  '/images/banner/Fem2.jpg',
-  '/images/banner/Nou3.jpg'
+  '/images/banner/public/images/african-american-woman.jpg',
+  '/images/banner/positive-african-american-maid.jpg',
+  '/images/banner/young-african-american.jpg',
+  '/images/banner/female-janitor-holding.jpg'
 ];
 
 const features = [
@@ -36,6 +38,8 @@ const features = [
 
 const Hero = () => {
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [isSignInOpen, setIsSignInOpen] = useState(false);
+  const [isSignUpOpen, setIsSignUpOpen] = useState(false);
 
   return (
     <>
@@ -68,20 +72,19 @@ const Hero = () => {
         </Swiper>
 
         {/* Content */}
-        <div className="relative z-10 container mx-auto px-4 ">
+        <div className="relative z-10 container mx-auto px-4 mt-32 lg:mt-0">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             className="max-w-3xl mx-auto text-center"
           >
-            <span className="inline-block px-4 py-2 bg-primary bg-opacity-80 text-white backdrop-blur-sm rounded-full text-custom-8 font-medium mb-2">
+            {/* <span className="inline-block px-4 py-2 bg-primary bg-opacity-80 text-white backdrop-blur-sm rounded-full text-custom-8 font-medium mb-4">
               Services à Domicile Premium
-            </span>
+            </span> */}
             
-            <h1 className="text-[20px] lg:text-[22px] font-montserrat font-bold text-white mb-6 leading-tight">
-            Des professionnels de confiance ,{' '}
-              <span className="text-primary-400">à votre service</span>
+            <h1 className="text-[24px] lg:text-[28px] font-montserrat font-bold text-white mb-6 mt-4 leading-tight">
+              Vous cherchez, nous trouvons ! 
             </h1>
             
             <p className="text-xl text-gray-200 mb-8 max-w-2xl mx-auto">
@@ -93,11 +96,12 @@ const Hero = () => {
                 onClick={() => setIsBookingModalOpen(true)}
                 className="px-8 py-4 bg-primary hover:bg-primary text-white rounded-full font-semibold flex items-center shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1"
               >
-                Réserver maintenant
-                <ArrowRight className="ml-2 w-5 h-5" />
+                Choisir votre personnel
               </button>
-              <button className="px-8 py-4 bg-white/10 hover:bg-white/20 text-white rounded-full font-semibold backdrop-blur-sm transition-all">
-                En savoir plus
+              <button 
+              onClick={() => setIsSignUpOpen(true)} 
+              className="px-8 py-4 bg-primary/10 hover:bg-white/20 text-white rounded-full font-semibold backdrop-blur-sm transition-all">
+                Postulez pour un emploi
               </button>
             </div>
 
@@ -131,6 +135,17 @@ const Hero = () => {
         isOpen={isBookingModalOpen}
         onClose={() => setIsBookingModalOpen(false)}
       />
+
+      {/* Modals */}
+      <AuthModal 
+        isOpen={isSignInOpen}
+        onClose={() => setIsSignInOpen(false)}
+      />
+      <AuthModalInscription 
+        isOpen={isSignUpOpen}
+        onClose={() => setIsSignUpOpen(false)}
+      />
+      
     </>
   );
 };

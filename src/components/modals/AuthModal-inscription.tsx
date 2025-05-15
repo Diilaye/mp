@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { X, Mail, Lock, User, ArrowRight, Eye, EyeOff, Phone, UserPlus, UserCog } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
+import { toast } from 'react-hot-toast';
+import axios from 'axios';
+import { p } from 'framer-motion/client';
 type Props = {
   isOpen: boolean;
   onClose: () => void;
@@ -16,6 +18,7 @@ const AuthModalInscription: React.FC<Props> = ({ isOpen, onClose }) => {
   const [userType, setUserType] = useState<UserType>(null);
   const [registrationType, setRegistrationType] = useState<RegistrationType>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -28,6 +31,48 @@ const AuthModalInscription: React.FC<Props> = ({ isOpen, onClose }) => {
     // Handle authentication
     console.log(formData);
     onClose();
+  };
+
+  const handleDemandeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    try {
+
+      console.log("formData");
+      console.log(formData);
+
+      const response = await axios.post(
+        'http://127.0.0.1:3031/api/v1/demande-users',
+        {
+          phone: formData.phone, 
+        },
+        { withCredentials: true  , 
+
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json',
+          }
+        }
+      );
+
+    
+      
+
+      if (response.status === 201) {
+        toast.success('Demande envoyé avec sucess !');
+        onClose(); // On ferme seulement après succès
+      } else {
+        toast.error('Erreur demande non envoyé !');
+      }
+     
+    } catch (error) {
+      console.error(error);
+      toast.error('Erreur demande non envoyé !');
+    } finally {
+      setIsLoading(false);
+    }
+
   };
 
   const handleSocialLogin = (provider: 'google' | 'facebook') => {
@@ -140,16 +185,16 @@ const AuthModalInscription: React.FC<Props> = ({ isOpen, onClose }) => {
             <>
               <div className='mb-4'>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
+                  Téléphone
                 </label>
                 <div className="relative">
                   <Mail className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    type="phone"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:border-transparent"
-                    placeholder="Votre email"
+                    placeholder="Votre téléphone"
                     required
                   />
                 </div>
@@ -283,11 +328,21 @@ const AuthModalInscription: React.FC<Props> = ({ isOpen, onClose }) => {
               </p>
                 <div className="flex flex-col space-y-3">
                   <button
-                    type="submit"
+                    type="button"
+                    onClick={handleDemandeSubmit}
                     className="w-full bg-black text-white py-2 rounded-lg transition-colors flex items-center justify-center"
                   >
-                    {(registrationType === 'admin' ? 'Envoyer la demande' : 'S\'inscrire')}
-                    <ArrowRight className="w-5 h-5 ml-2" />
+                    {isLoading ? (
+                      <span className="flex items-center">
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Demande en cours...
+                      </span>
+                    ) : ( 
+                      'Envoyer la demande'
+                    )}
                   </button>
   
                   { (
@@ -306,9 +361,6 @@ const AuthModalInscription: React.FC<Props> = ({ isOpen, onClose }) => {
             </form>
           ) : (
             <div className="space-y-4">
-              <h3 className="text-lg font-medium text-gray-900 text-center mb-6">
-                Je souhaite m'inscrire en tant que
-              </h3>
               
               <button
                 onClick={() => handleUserTypeSelect('client')}
@@ -319,7 +371,7 @@ const AuthModalInscription: React.FC<Props> = ({ isOpen, onClose }) => {
                     <User className="w-6 h-6 text-white group-hover:text-black" />
                   </div>
                   <div className="text-left">
-                    <h4 className="font-medium text-black group-hover:text-white transition-colors">Client</h4>
+                    <h4 className="font-medium text-black group-hover:text-white transition-colors">Trouvez votre profil</h4>
                     <p className="text-sm text-black group-hover:text-white transition-colors">
                       Je cherche des services à domicile
                     </p>
@@ -336,7 +388,7 @@ const AuthModalInscription: React.FC<Props> = ({ isOpen, onClose }) => {
                     <User className="w-6 h-6 text-white group-hover:text-black" />
                   </div>
                   <div className="text-left">
-                    <h4 className="font-medium text-black group-hover:text-white transition-colors">Prestataire</h4>
+                    <h4 className="font-medium text-black group-hover:text-white transition-colors">Postulez</h4>
                     <p className="text-sm text-black group-hover:text-white transition-colors">
                       Je propose mes services
                     </p>

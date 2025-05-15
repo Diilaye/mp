@@ -59,27 +59,27 @@ const Footer = () => {
             </h3>
             <ul className="space-y-4">
               <li>
-                <Link to="/about" className="hover:text-white transition-colors">
+                <Link to="#" className="hover:text-white transition-colors">
                   À propos de nous
                 </Link>
               </li>
               <li>
-                <Link to="/blog" className="hover:text-white transition-colors">
+                <Link to="#" className="hover:text-white transition-colors">
                   Blog
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="hover:text-white transition-colors">
+                <Link to="#" className="hover:text-white transition-colors">
                   Contactez-nous
                 </Link>
               </li>
               <li>
-                <Link to="/pricing" className="hover:text-white transition-colors">
+                <Link to="#" className="hover:text-white transition-colors">
                   Tarifs
                 </Link>
               </li>
               <li>
-                <Link to="/testimonials" className="hover:text-white transition-colors">
+                <Link to="#" className="hover:text-white transition-colors">
                   Témoignages
                 </Link>
               </li>
@@ -93,27 +93,27 @@ const Footer = () => {
             </h3>
             <ul className="space-y-4">
               <li>
-                <Link to="/help" className="hover:text-white transition-colors">
+                <Link to="#" className="hover:text-white transition-colors">
                   Centre d'aide
                 </Link>
               </li>
               <li>
-                <Link to="/terms" className="hover:text-white transition-colors">
+                <Link to="#" className="hover:text-white transition-colors">
                   Conditions d'utilisation
                 </Link>
               </li>
               <li>
-                <Link to="/legal" className="hover:text-white transition-colors">
+                <Link to="#" className="hover:text-white transition-colors">
                   Mentions légales
                 </Link>
               </li>
               <li>
-                <Link to="/privacy" className="hover:text-white transition-colors">
+                <Link to="#" className="hover:text-white transition-colors">
                   Politique de confidentialité
                 </Link>
               </li>
               <li>
-                <Link to="/status" className="hover:text-white transition-colors">
+                <Link to="#" className="hover:text-white transition-colors">
                   Statut
                 </Link>
               </li>
@@ -143,7 +143,7 @@ const Footer = () => {
 
         {/* Copyright */}
         <div className="mt-16 pt-8 border-t border-gray-800 text-center text-sm">
-          <p>©2025 - All Rights Reserved by Simplon solutins</p>
+          <p>©2025 - All Rights Reserved by <a href="https://www.simplonsolution.com/" target="_blank" rel="noopener noreferrer"> Simplon solutins</a></p>
         </div>
       </div>
     </footer>

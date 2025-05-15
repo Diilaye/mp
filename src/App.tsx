@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from 'react-hot-toast';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import Workers from './components/Workers';
@@ -15,20 +17,49 @@ import ClientRegistrationForm from './components/client/RegistrationForm';
 import Dashboard from './components/housekeeper/dashboard/Dashboard';
 import AdminDashboard from './components/housekeeper/dashboard/AdminDashboard';
 import Navbar from './components/Navbar';
+import HomePage from './pages/Home';
+import Personnel from './components/personnel-list';
+import LoginPage from './login-page';
+
+const queryClient = new QueryClient();
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   return (
+    <QueryClientProvider client={queryClient}>
     <Router>
+    <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 10000,
+            style: {
+              background: '#363636',
+              color: '#fff',
+            },
+            success: {
+              duration: 10000,
+              style: {
+                background: '#8A9B6E',
+              },
+            },
+            error: {
+              duration: 3000,
+              style: {
+                background: '#ef4444',
+              },
+            },
+          }}
+        />
       <div className="min-h-screen bg-offwhite">
         <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
         <Routes>
           <Route
             path="/"
             element={
-              <main className='mb-1'>
+              <main>
                 <Hero />
-                <Workers />
+                <Personnel />
+                {/* <Workers /> */}
                 <Services />
                 <Reviews />
                 <Newsletter />
@@ -47,12 +78,15 @@ function App() {
               <ClientRegistrationForm />
               </main>
           } />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/login" element={<LoginPage />} />
+          <Route path="/admin" element={<Dashboard />} />
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/dashboard" element={<AdminDashboard />} />
         </Routes>
         <Footer />
       </div>
     </Router>
+    </QueryClientProvider>
   );
 }
 

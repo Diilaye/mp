@@ -1,18 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { API_ENDPOINTS, getApiUrl } from '../config/api.config';
 import { motion } from 'framer-motion';
 import { Star, ThumbsUp, MessageCircle, Calendar } from 'lucide-react';
 import ReviewModal from './modals/ReviewModal';
 
 type Review = {
   id: string;
-  userName: string;
-  userImage: string;
+  nom: string;
   rating: number;
   comment: string;
-  service: string;
-  date: string;
-  helpful: number;
-  verified: boolean;
+  CratedAt: string;
+  isAvailable: boolean;
 };
 
 const ReviewCard = ({ review }: { review: Review }) => {
@@ -38,20 +36,20 @@ const ReviewCard = ({ review }: { review: Review }) => {
       className="bg-white rounded-xl shadow-lg p-6"
     >
       <div className="flex items-start space-x-4">
-        <img
+        {/* <img
           src={review.userImage}
           alt={review.userName}
           className="w-12 h-12 rounded-full object-cover"
-        />
+        /> */}
         <div className="flex-1">
           <div className="flex items-start justify-between">
             <div>
               <h3 className="font-montserrat font-semibold text-gray-900">
-                {review.userName}
+                {review.nom}
               </h3>
               <div className="flex items-center space-x-2 mt-1">
                 <div className="flex">{renderStars(review.rating)}</div>
-                {review.verified && (
+                {review.isAvailable && (
                   <span className="text-xs text-green-600 font-medium px-2 py-0.5 bg-green-50 rounded-full">
                     Vérifié
                   </span>
@@ -59,18 +57,18 @@ const ReviewCard = ({ review }: { review: Review }) => {
               </div>
             </div>
             <div className="text-sm text-gray-500 flex items-center">
-              <Calendar className="w-4 h-4 mr-1" />
-              {new Date(review.date).toLocaleDateString('fr-FR', {
+              {/* <Calendar className="w-4 h-4 mr-1" />
+              {new Date(review.CratedAt).toLocaleDateString('fr-FR', {
                 day: 'numeric',
                 month: 'long',
                 year: 'numeric',
-              })}
+              })} */}
             </div>
           </div>
 
           <div className="mt-3">
             <span className="text-sm font-medium text-white bg-primary px-3 py-1 rounded-full">
-              {review.service}
+              {review.nom}
             </span>
           </div>
 
@@ -86,12 +84,9 @@ const ReviewCard = ({ review }: { review: Review }) => {
               }`}
             >
               <ThumbsUp className="w-4 h-4" />
-              <span>Utile ({review.helpful + (isHelpful ? 1 : 0)})</span>
+              {/* <span>Utile ({12})</span> */}
             </button>
-            <button className="flex items-center space-x-2 px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors">
-              <MessageCircle className="w-4 h-4" />
-              <span>Répondre</span>
-            </button>
+            
           </div>
         </div>
       </div>
@@ -100,58 +95,40 @@ const ReviewCard = ({ review }: { review: Review }) => {
 };
 
 const Reviews = () => {
+  
+  
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
-  const [reviews, setReviews] = useState<Review[]>([
-    {
-      id: '1',
-      userName: 'Marie Dupont',
-      userImage: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80',
-      rating: 5,
-      comment: "Service impeccable ! Sophie est très professionnelle et attentive aux détails. Je la recommande vivement pour l'entretien de la maison.",
-      service: 'Ménage',
-      date: '2024-03-15',
-      helpful: 12,
-      verified: true,
-    },
-    {
-      id: '2',
-      userName: 'Jean Martin',
-      userImage: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80',
-      rating: 4,
-      comment: "Très satisfait du service de repassage. Travail soigné et professionnel. Un petit bémol sur la ponctualité.",
-      service: 'Repassage',
-      date: '2024-03-14',
-      helpful: 8,
-      verified: true,
-    },
-    {
-      id: '3',
-      userName: 'Sophie Bernard',
-      userImage: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80',
-      rating: 5,
-      comment: "Excellente expérience avec Claire pour la garde de mes enfants. Elle est patiente, créative et très attentionnée.",
-      service: "Garde d'enfants",
-      date: '2024-03-13',
-      helpful: 15,
-      verified: true,
-    }
-  ]);
+
+  const [reviews, setReviews] = useState<Review[]>([]);
 
   const handleReviewSubmit = (reviewData: any) => {
     const newReview: Review = {
       id: (reviews.length + 1).toString(),
-      userName: 'Utilisateur',  // This would come from auth context in a real app
-      userImage: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80',
+      nom: 'Utilisateur',  // This would come from auth context in a real app
       rating: reviewData.rating,
       comment: reviewData.comment,
-      service: reviewData.service,
-      date: new Date().toISOString(),
-      helpful: 0,
-      verified: true,
+      CratedAt: new Date().toISOString(),
+      isAvailable: true,
     };
 
     setReviews([newReview, ...reviews]);
   };
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const response = await fetch(getApiUrl(API_ENDPOINTS.REVIEWS.LIST));
+        if (!response.ok) {
+          throw new Error('Erreur lors de la récupération des avis');
+        }
+        const data = await response.json();
+        setReviews(data.data);
+      } catch (error) {
+        console.error('Erreur lors de la récupération des avis:', error);
+      }
+    };
+    fetchReviews();
+  }, []);
 
   const averageRating = reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length;
 

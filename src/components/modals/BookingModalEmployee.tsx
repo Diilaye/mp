@@ -1,91 +1,54 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calendar, Clock, MapPin, User, Phone, Mail, MessageSquare, Briefcase, ArrowLeft, ArrowRight, Check } from 'lucide-react';
+import axios from 'axios';
 import { API_BASE_URL } from '../../config/api.config';
 import toast from 'react-hot-toast';
-import axios from 'axios';
-import { formatSlugToPhrase } from '../../utils/slug-to-text';
+import PaymentModal from './PaymentModal';
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
   worker?: {
+    id?: string;
     name: string;
     role: string;
     image: string;
   };
 };
 
-// const services = [
-//   {
-//     id: 'menage',
-//     name: 'Ménage',
-//     description: 'Nettoyage complet de votre intérieur',
-//   },
-//   {
-//     id: 'repassage',
-//     name: 'Repassage',
-//     description: 'Service de repassage professionnel',
-//   },
-//   {
-//     id: 'garde-enfants',
-//     name: 'Garde d\'enfants',
-//     description: 'Garde d\'enfants à domicile',
-//   },
-//   {
-//     id: 'aide-seniors',
-//     name: 'Aide aux seniors',
-//     description: 'Accompagnement et aide aux personnes âgées',
-//   },
-// ];
+const services = [
+  {
+    id: 'menage',
+    name: 'Ménage',
+    description: 'Nettoyage complet de votre intérieur',
+  },
+  {
+    id: 'repassage',
+    name: 'Repassage',
+    description: 'Service de repassage professionnel',
+  },
+  {
+    id: 'garde-enfants',
+    name: 'Garde d\'enfants',
+    description: 'Garde d\'enfants à domicile',
+  },
+  {
+    id: 'aide-seniors',
+    name: 'Aide aux seniors',
+    description: 'Accompagnement et aide aux personnes âgées',
+  }
+];
 
-interface Service {
-  id: string;
-  nom: string;
-  description : string,
-  price: number;
-  isAvailable: boolean;
-}
-
-const BookingModal: React.FC<Props> = ({ isOpen, onClose, worker }) => {
+const BookingModalEmployee: React.FC<Props> = ({ isOpen, onClose, worker }) => {
   // Étape actuelle du formulaire - réduit à 2 étapes
   const [currentStep, setCurrentStep] = useState(1);
-  const [services, setServices] = useState<Service[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
   const totalSteps = 2;
 
-   // Chargement initial des services
-    useEffect(() => {
-      fetchServices();
-    }, []);
-
-  const fetchServices = async () => {
-    setIsLoading(true);
-    const token = localStorage.getItem('token');
-
-    try {
-      const response = await axios.get(
-        `${API_BASE_URL}/service`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
-          withCredentials: true
-        }
-      );
-
-      if (response.data.success) {
-        setServices(response.data.data);
-      } else {
-        toast.error('Erreur lors de la récupération des services');
-      }
-    } catch (error) {
-      console.error('Erreur lors de la récupération des services:', error);
-      toast.error('Impossible de récupérer les services');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // États pour gérer le paiement
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [reservationId, setReservationId] = useState('');
+  const [reservationAmount, setReservationAmount] = useState(0);
 
   const [formData, setFormData] = useState({
     service: '',
@@ -103,7 +66,7 @@ const BookingModal: React.FC<Props> = ({ isOpen, onClose, worker }) => {
   const validateStep = (step: number): boolean => {
     switch (step) {
       case 1: // Service et horaire
-        return !!formData.service && !!formData.date;
+        return !!formData.date;
       case 2: // Adresse et informations personnelles combinées
         return !!formData.address && !!formData.name && !!formData.phone && !!formData.email;
       default:
@@ -127,26 +90,29 @@ const BookingModal: React.FC<Props> = ({ isOpen, onClose, worker }) => {
     e.preventDefault();
     if (validateStep(currentStep)) {
       try {
-        // Trouver le service sélectionné pour obtenir son prix
-        const selectedService = services.find(service => service.id === formData.service);
-        if (!selectedService) {
-          toast.error('Service non trouvé');
+        // Déterminer le prix en fonction du service (valeur par défaut si aucun service n'est sélectionné)
+        const servicePrice = 5000; // Prix par défaut en XOF
+        
+        // Vérifier si l'employé est défini
+        if (!worker) {
+          toast.error('Aucun employé sélectionné pour cette réservation');
           return;
         }
         
         // Préparer les données de réservation
         const reservationData: any = {
-          // Informations du service
-          serviceId: formData.service,
-          // Ajouter des métadonnées sur le service pour référence
-          serviceInfo: {
-            name: selectedService.nom,
-            description: selectedService.description,
-            price: selectedService.price
+          // Ajouter des métadonnées sur l'employé pour référence
+          employerInfo: {
+            name: worker.name,
+            role: worker.role,
+            image: worker.image
           },
+          
+          // N'ajouter employerId que s'il existe
+          ...(worker.id && { employerId: worker.id }),
           startDate: new Date(formData.date),
           status: 'PENDING',
-          amount: selectedService.price,
+          amount: servicePrice,
           notes: formData.message,
           address: formData.address,
           // Informations client
@@ -154,6 +120,8 @@ const BookingModal: React.FC<Props> = ({ isOpen, onClose, worker }) => {
           phone: formData.phone,
           email: formData.email
         };
+        
+        console.log('Données de réservation avec employé:', reservationData);
         
         // Récupérer le token d'authentification s'il existe
         const token = localStorage.getItem('token');
@@ -172,21 +140,18 @@ const BookingModal: React.FC<Props> = ({ isOpen, onClose, worker }) => {
         );
         
         if (response.data.success) {
-          toast.success('Réservation effectuée avec succès!');
-          // Réinitialiser le formulaire et fermer le modal
-          setFormData({
-            service: '',
-            date: '',
-            time: '',
-            duration: '2',
-            address: '',
-            name: '',
-            phone: '',
-            email: '',
-            message: '',
-          });
-          setCurrentStep(1);
-          onClose();
+          toast.success('Réservation créée avec succès!');
+          
+          // Stocker les informations de la réservation pour le paiement
+          const createdReservation = response.data.data;
+          setReservationId(createdReservation.id);
+          setReservationAmount(createdReservation.amount);
+          
+          // Ouvrir le modal de paiement
+          setIsPaymentModalOpen(true);
+          
+          // Ne pas fermer le modal principal tout de suite
+          // Le paiement sera géré dans le modal de paiement
         } else {
           toast.error(response.data.message || 'Erreur lors de la réservation');
         }
@@ -201,6 +166,30 @@ const BookingModal: React.FC<Props> = ({ isOpen, onClose, worker }) => {
   const handleClose = () => {
     setCurrentStep(1);
     onClose();
+  };
+
+  // Gérer le succès du paiement
+  const handlePaymentSuccess = () => {
+    // Réinitialiser le formulaire
+    setFormData({
+      service: '',
+      date: '',
+      time: '',
+      duration: '2',
+      address: '',
+      name: '',
+      phone: '',
+      email: '',
+      message: '',
+    });
+    setCurrentStep(1);
+    
+    // Fermer le modal de paiement et le modal principal
+    setIsPaymentModalOpen(false);
+    onClose();
+    
+    // Afficher un message de succès
+    toast.success('Réservation et paiement effectués avec succès!');
   };
 
   if (!isOpen) return null;
@@ -284,12 +273,12 @@ const BookingModal: React.FC<Props> = ({ isOpen, onClose, worker }) => {
                   className="space-y-6"
                 >
                   {/* Service Selection */}
-                  <div>
+                  {/* <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       <Briefcase className="w-4 h-4 inline-block mr-2" />
                       Service souhaité
                     </label>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {services.map((service) => (
                         <label
                           key={service.id}
@@ -308,13 +297,13 @@ const BookingModal: React.FC<Props> = ({ isOpen, onClose, worker }) => {
                             className="absolute opacity-0"
                           />
                           <div className="flex flex-col">
-                            <span className="font-medium text-gray-900">{formatSlugToPhrase(service.nom)}</span>
-                            {/* <span className="text-sm text-gray-500">{service.description}</span> */}
+                            <span className="font-medium text-gray-900">{service.name}</span>
+                            <span className="text-sm text-gray-500">{service.description}</span>
                           </div>
                         </label>
                       ))}
                     </div>
-                  </div>
+                  </div> */}
 
                   <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
                     {/* Date */}
@@ -478,8 +467,17 @@ const BookingModal: React.FC<Props> = ({ isOpen, onClose, worker }) => {
           </form>
         </div>
       </motion.div>
+      
+      {/* Modal de paiement */}
+      <PaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        reservationId={reservationId}
+        amount={reservationAmount}
+        onPaymentSuccess={handlePaymentSuccess}
+      />
     </div>
   );
 };
 
-export default BookingModal;
+export default BookingModalEmployee;

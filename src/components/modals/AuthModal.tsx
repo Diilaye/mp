@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { X, Mail, Lock, User, ArrowRight, Eye, EyeOff, Phone, UserPlus, UserCog } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
+import axios from 'axios';
+import { toast } from 'react-hot-toast';
 type Props = {
   isOpen: boolean;
   onClose: () => void;
@@ -14,35 +15,86 @@ type RegistrationType = 'self' | 'admin' | null;
 const AuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [userType, setUserType] = useState<UserType>(null);
   const [registrationType, setRegistrationType] = useState<RegistrationType>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
-    email: '',
     password: '',
-    name: '',
     phone: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle authentication
-    console.log(formData);
-    onClose();
+    setIsLoading(true);
+    setError('');
+    
+    try {
+      // Configure axios to handle CORS issues
+      const response = await axios({
+        method: 'post',
+        //url: 'http://127.0.0.1:3031/api/v1/users/login',
+        url : 'https://mp-api.nataal.shop/api/v1/users/login',
+        data: {
+          phone: formData.phone,
+          password: formData.password,
+        },
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          // Remove any authorization headers if they're being added automatically
+        },
+        withCredentials: true,
+        // Add timeout to get faster error responses
+        timeout: 10000
+      });
+      
+      console.log("Login response:", response);
+      
+      if (response.status === 200) {
+        toast.success('Connexion réussie avec succès !');
+        localStorage.setItem('user', JSON.stringify(response.data.data));
+        localStorage.setItem('token', response.data.data.token);
+        localStorage.setItem('role', response.data.data.role);
+        onClose(); // Close modal first to avoid UI issues
+        navigate('/admin');
+        window.location.reload();
+      } else {
+        toast.error('Téléphone ou mot de passe incorrect !');
+        setError('error');
+      }
+    } catch (error: any) {
+      console.error("Login error:", error);
+      
+      // More detailed error handling
+      if (error.code === 'ERR_NETWORK') {
+        toast.error('Erreur de connexion au serveur. Vérifiez que le backend est actif et accessible.');
+        setError('network');
+      } else if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        const status = error.response.status;
+        if (status === 401) {
+          toast.error('Téléphone ou mot de passe incorrect !');
+        } else {
+          toast.error(`Erreur ${status}: ${error.response.data.message || 'Une erreur est survenue'}`);
+        }
+        setError('error');
+      } else {
+        toast.error('Une erreur inattendue est survenue. Veuillez réessayer.');
+        setError('error');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
-
-  const handleSocialLogin = (provider: 'google' | 'facebook') => {
-    // Handle social login
-    console.log(`Login with ${provider}`);
-  };
-
+  
   const resetForm = () => {
     setUserType(null);
     setRegistrationType(null);
     setFormData({
-      email: '',
       password: '',
-      name: '',
       phone: '',
     });
   };
@@ -93,7 +145,7 @@ const AuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
         </div>
 
         {/* Form */}
-       <form>
+       <form onSubmit={handleSubmit}>
        <div className="p-6">
             <div className='mb-4'>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -102,9 +154,9 @@ const AuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
               <div className="relative">
                 <Phone className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
-                  type="phone"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-rose-500 focus:border-transparent"
                   placeholder="Votre téléphone"
                   required
@@ -171,7 +223,7 @@ const AuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
               <div className="mt-6 grid grid-cols-2 gap-3">
                 <button
                   type="button"
-                  onClick={() => handleSocialLogin('google')}
+                  onClick={() => null}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2"
                 >
                   <img
@@ -183,7 +235,7 @@ const AuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleSocialLogin('facebook')}
+                  onClick={() => null}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2"
                 >
                   <img
@@ -198,15 +250,42 @@ const AuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
           </div>
           <div className="flex items-center justify-between p-6 border-t border-gray-200">
             <button
-              type="button"
-              onClick={handleSubmit}
+              type="submit"
               className="w-full px-4 py-2 bg-black text-white rounded-lg hover:bg-rose-700 transition-colors flex items-center justify-center space-x-2"
+              disabled={isLoading}
             >
-              <ArrowRight className="w-5 h-5" />
-              <span>Se connecter</span>
+             {!isLoading && <ArrowRight className="w-5 h-5 mr-2" />} 
+              {isLoading ? (
+                <span className="flex items-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Connexion en cours...
+                </span>
+              ) : (
+                'Se connecter'
+              )}
             </button>
            
           </div>
+          {error === 'success' && (
+            <div className="text-green-600 font-medium mt-2 text-center pb-4">
+              Connexion réussie !
+            </div>
+          )}
+          
+          {error === 'error' && (
+            <div className="text-red-600 font-medium mt-2 text-center pb-4">
+              Téléphone ou mot de passe incorrect.
+            </div>
+          )}
+          
+          {error === 'network' && (
+            <div className="text-red-600 font-medium mt-2 text-center pb-4">
+              Impossible de se connecter au serveur. Vérifiez votre connexion et que le backend est actif.
+            </div>
+          )}
        </form>
       </motion.div>
     </div>
